@@ -64,7 +64,7 @@ torch::Tensor batch_prefill_with_paged_kv_cache(
     cudaError_t status =
         BatchPrefillWithPagedKVCache<PageStorage::kIndices, c_type, c_type, int32_t>(
             static_cast<c_type*>(q.data_ptr()), static_cast<int32_t*>(q_indptr.data_ptr()),
-            paged_kv, static_cast<c_type*>(o.data_ptr()),
+            /*q_rope_position=*/nullptr, paged_kv, static_cast<c_type*>(o.data_ptr()),
             /*tmp=*/nullptr,
             /*lse=*/nullptr, num_qo_heads, causal, RotaryMode(rotary_mode), allow_fp16_qk_reduction,
             rope_scale, rope_theta);
@@ -149,8 +149,8 @@ std::vector<torch::Tensor> BatchPrefillWithPagedKVCachePyTorchWrapper::Forward(
     cudaError_t status =
         BatchPrefillWithPagedKVCacheWrapper<PageStorage::kIndices, c_type, c_type, int32_t>(
             &handler_, static_cast<c_type*>(q.data_ptr()),
-            static_cast<int32_t*>(qo_indptr.data_ptr()), paged_kv,
-            static_cast<c_type*>(o.data_ptr()),
+            static_cast<int32_t*>(qo_indptr.data_ptr()),
+            /*q_rope_position=*/nullptr, paged_kv, static_cast<c_type*>(o.data_ptr()),
             /*lse=*/return_lse ? static_cast<float*>(lse.data_ptr()) : nullptr, num_qo_heads,
             causal, RotaryMode(rotary_mode), allow_fp16_qk_reduction, rope_scale, rope_theta,
             /*stream=*/nullptr);

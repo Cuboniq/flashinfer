@@ -55,6 +55,8 @@ struct paged_kv_t {
   IdType* indptr;
   // [batch_size] The offset of the last page for each request in the batch
   IdType* last_page_len;
+  // [batch_size] The start position of each request in the batch.
+  IdType* rope_pos_offset;
 
   /* ------------ Auxliary Information Used in Cooperative Kernels ------------ */
   IdType* cooperative_aux_info;
@@ -87,6 +89,7 @@ struct paged_kv_t {
         ptrs(nullptr),
         indptr(nullptr),
         last_page_len(nullptr),
+        rope_pos_offset(nullptr),
         cooperative_aux_info(nullptr) {}
 
   /*!
@@ -99,12 +102,14 @@ struct paged_kv_t {
    * \param indices The page indices array
    * \param indptr The page indptr array
    * \param last_page_len The offset of the last page for each request in the batch
+   * \param rope_pos_offset The start position of each request in the batch.
    * \note This constructor should only be used when page_storage == kIndices
    */
   __host__ __device__ __forceinline__ paged_kv_t(uint32_t num_heads, uint32_t page_size,
                                                  uint32_t head_dim, uint32_t batch_size,
                                                  DType* data, IdType* indices, IdType* indptr,
-                                                 IdType* last_page_len)
+                                                 IdType* last_page_len,
+                                                 IdType* rope_pos_offset = nullptr)
       : num_heads(num_heads),
         page_size(page_size),
         head_dim(head_dim),
@@ -113,6 +118,7 @@ struct paged_kv_t {
         indices(indices),
         indptr(indptr),
         last_page_len(last_page_len),
+        rope_pos_offset(rope_pos_offset),
         cooperative_aux_info(nullptr) {}
 
   /*!
@@ -124,12 +130,14 @@ struct paged_kv_t {
    * \param ptrs The array of pointers to each active page
    * \param indptr The page indptr array
    * \param last_page_len The offset of the last page for each request in the batch
+   * \param rope_pos_offset The start position of each request in the batch.
    * \note This constructor should only be used when page_storage == kIndices
    */
   __host__ __device__ __forceinline__ paged_kv_t(uint32_t num_heads, uint32_t page_size,
                                                  uint32_t head_dim, uint32_t batch_size,
                                                  DType** ptrs, IdType* indptr,
-                                                 IdType* last_page_len)
+                                                 IdType* last_page_len,
+                                                 IdType* rope_pos_offset = nullptr)
       : num_heads(num_heads),
         page_size(page_size),
         head_dim(head_dim),
@@ -137,6 +145,7 @@ struct paged_kv_t {
         ptrs(ptrs),
         indptr(indptr),
         last_page_len(last_page_len),
+        rope_pos_offset(rope_pos_offset),
         cooperative_aux_info(nullptr) {}
 
   /*!
@@ -149,13 +158,14 @@ struct paged_kv_t {
    * \param indices The page indices array
    * \param indptr The page indptr array
    * \param last_page_len The offset of the last page for each request in the batch
+   * \param rope_pos_offset The start position of each request in the batch.
    * \param cooperative_aux_info The auxiliary information used in cooperative kernels
    * \note This constructor should only be used when page_storage == kIndices
    */
   __host__ __device__ __forceinline__ paged_kv_t(uint32_t num_heads, uint32_t page_size,
                                                  uint32_t head_dim, uint32_t batch_size,
                                                  DType* data, IdType* indices, IdType* indptr,
-                                                 IdType* last_page_len,
+                                                 IdType* last_page_len, IdType* rope_pos_offset,
                                                  IdType* cooperative_aux_info)
       : num_heads(num_heads),
         page_size(page_size),
@@ -165,6 +175,7 @@ struct paged_kv_t {
         indices(indices),
         indptr(indptr),
         last_page_len(last_page_len),
+        rope_pos_offset(rope_pos_offset),
         cooperative_aux_info(cooperative_aux_info) {}
 
   /*!
@@ -176,13 +187,14 @@ struct paged_kv_t {
    * \param ptrs The array of pointers to each active page
    * \param indptr The page indptr array
    * \param last_page_len The offset of the last page for each request in the batch
+   * \param rope_pos_offset The start position of each request in the batch.
    * \param cooperative_aux_info The auxiliary information used in cooperative kernels
    * \note This constructor should only be used when page_storage == kIndices
    */
   __host__ __device__ __forceinline__ paged_kv_t(uint32_t num_heads, uint32_t page_size,
                                                  uint32_t head_dim, uint32_t batch_size,
                                                  DType** ptrs, IdType* indptr,
-                                                 IdType* last_page_len,
+                                                 IdType* last_page_len, IdType* rope_pos_offset,
                                                  IdType* cooperative_aux_info)
       : num_heads(num_heads),
         page_size(page_size),
@@ -191,6 +203,7 @@ struct paged_kv_t {
         ptrs(ptrs),
         indptr(indptr),
         last_page_len(last_page_len),
+        rope_pos_offset(rope_pos_offset),
         cooperative_aux_info(cooperative_aux_info) {}
 
   /*!
