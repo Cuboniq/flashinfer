@@ -755,7 +755,7 @@ __device__ __forceinline__ void write_o_reg_gmem(float (*o_frag)[num_frags_y][8]
  * \param log2_rope_rcp_theta log2(1/(rope_theta)), where rope_theta is the theta
  *   used in RoPE.
  */
-template <bool partition_kv, uint32_t group_size, bool causal, QKVLayout layout,
+template <bool partition_kv, uint32_t group_size, bool causal, KVLayout layout,
           RotaryMode rotary_mode, uint32_t num_frags_x, uint32_t num_frags_y, uint32_t num_frags_z,
           uint32_t num_warps, typename DTypeIn, typename DTypeQKAccum, typename DTypeOut>
 __global__ void SinglePrefillWithKVCacheKernel(
@@ -940,7 +940,7 @@ __global__ void SinglePrefillWithKVCacheKernel(
   }
 }
 
-template <uint32_t group_size, bool causal, QKVLayout layout, RotaryMode rotary_mode,
+template <uint32_t group_size, bool causal, KVLayout layout, RotaryMode rotary_mode,
           uint32_t num_frags_x, uint32_t num_frags_y, uint32_t num_frags_z, uint32_t num_warps,
           typename DTypeIn, typename DTypeQKAccum, typename DTypeOut, typename IdType>
 __global__ void BatchPrefillWithRaggedKVCacheKernel(
@@ -1165,14 +1165,14 @@ __global__ void BatchPrefillWithPagedKVCacheKernel(
   init_states<num_frags_x, num_frags_y>(o_frag, m, d);
 
   const uint32_t qo_idx_base = ((tile_idx * num_warps + ty) * num_frags_x * 16) / group_size;
-  const uint32_t kv_n_stride = get_n_stride_impl<QKVLayout::kNHD, head_dim>(num_kv_heads),
-                 qo_n_stride = get_n_stride_impl<QKVLayout::kNHD, head_dim>(num_qo_heads),
-                 qo_h_stride = get_h_stride_impl<QKVLayout::kNHD, head_dim>(qo_len);
+  const uint32_t kv_n_stride = get_n_stride_impl<KVLayout::kNHD, head_dim>(num_kv_heads),
+                 qo_n_stride = get_n_stride_impl<KVLayout::kNHD, head_dim>(num_qo_heads),
+                 qo_h_stride = get_h_stride_impl<KVLayout::kNHD, head_dim>(qo_len);
   smem_t qo_smem(smem);
-  DTypeIn* q_ptr_base = q + get_elem_offset_impl<QKVLayout::kNHD, head_dim>(
+  DTypeIn* q_ptr_base = q + get_elem_offset_impl<KVLayout::kNHD, head_dim>(
                                 qo_indptr[request_idx] + qo_idx_base, kv_head_idx * group_size,
                                 (tx % 8) * num_elems_per_128b<DTypeIn>(), qo_len, num_qo_heads);
-  DTypeIn* o_ptr_base = o + get_elem_offset_impl<QKVLayout::kNHD, head_dim>(
+  DTypeIn* o_ptr_base = o + get_elem_offset_impl<KVLayout::kNHD, head_dim>(
                                 qo_indptr[request_idx] + qo_idx_base, kv_head_idx * group_size,
                                 (tx % 8) * num_elems_per_128b<DTypeOut>(), qo_len, num_qo_heads);
   uint32_t q_smem_offset_r =
@@ -1317,7 +1317,7 @@ template <typename DTypeIn, typename DTypeOut>
 cudaError_t SinglePrefillWithKVCacheWorkEstimation(
     uint32_t& tmp_size, uint32_t& max_grid_size, uint32_t num_qo_heads, uint32_t num_kv_heads,
     uint32_t qo_len, uint32_t kv_len, uint32_t head_dim, bool causal = true,
-    QKVLayout layout = QKVLayout::kNHD, RotaryMode rotary_mode = RotaryMode::kNone,
+    KVLayout layout = KVLayout::kNHD, RotaryMode rotary_mode = RotaryMode::kNone,
     bool allow_fp16_qk_reduction = false, cudaStream_t stream = nullptr) {
   if (kv_len < qo_len && causal) {
     std::ostringstream err_msg;
@@ -1411,7 +1411,7 @@ cudaError_t SinglePrefillWithKVCacheWorkEstimation(
   return cudaSuccess;
 }
 
-template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, QKVLayout LAYOUT, RotaryMode ROTARY_MODE,
+template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, KVLayout LAYOUT, RotaryMode ROTARY_MODE,
           bool ALLOW_FP16_QK_REDUCTION, bool CAUSAL, typename DTypeIn, typename DTypeOut>
 cudaError_t SinglePrefillWithKVCacheDispatched(DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeOut* o,
                                                float* tmp, float* lse, uint32_t num_kv_heads,
@@ -1552,7 +1552,7 @@ template <typename DTypeIn, typename DTypeOut>
 cudaError_t SinglePrefillWithKVCache(DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeOut* o, float* tmp,
                                      float* lse, uint32_t num_qo_heads, uint32_t num_kv_heads,
                                      uint32_t qo_len, uint32_t kv_len, uint32_t head_dim,
-                                     bool causal = true, QKVLayout layout = QKVLayout::kNHD,
+                                     bool causal = true, KVLayout layout = KVLayout::kNHD,
                                      RotaryMode rotary_mode = RotaryMode::kNone,
                                      bool allow_fp16_qk_reduction = false, float rope_scale = 1.f,
                                      float rope_theta = 1e4, cudaStream_t stream = nullptr) {
@@ -1606,7 +1606,7 @@ std::tuple<IdType, IdType, std::vector<IdType>, std::vector<IdType>> split_qo_in
   return {num_frags_x, num_qo_tiles, std::move(request_indices), std::move(tile_indices)};
 }
 
-template <uint32_t num_frags_x, uint32_t GROUP_SIZE, uint32_t HEAD_DIM, QKVLayout LAYOUT,
+template <uint32_t num_frags_x, uint32_t GROUP_SIZE, uint32_t HEAD_DIM, KVLayout LAYOUT,
           RotaryMode ROTARY_MODE, bool ALLOW_FP16_QK_REDUCTION, bool CAUSAL, typename DTypeIn,
           typename DTypeOut, typename IdType>
 cudaError_t BatchPrefillWithRaggedKVCacheDispatched(
@@ -1698,7 +1698,7 @@ cudaError_t BatchPrefillWithRaggedKVCache(
                                        sizeof(IdType) * tile_indices_h.size(),
                                        cudaMemcpyHostToDevice, stream));
 
-  constexpr QKVLayout LAYOUT = QKVLayout::kNHD;
+  constexpr KVLayout LAYOUT = KVLayout::kNHD;
   SWITCH_NUM_FRAGS_X(
       num_frags_x, NUM_FRAGS_X,
       {SWITCH_ALLOW_FP16_QK_REDUCTION(
@@ -1751,7 +1751,7 @@ cudaError_t BatchPrefillWithPagedKVCacheFallbackDispatched(
     paged_kv_t<page_storage, DTypeIn, IdType> paged_kv, DTypeOut* o, float* tmp, float* lse,
     uint32_t num_qo_tiles, float rope_scale = 1.f, float rope_theta = 1e4,
     cudaStream_t stream = nullptr) {
-  constexpr QKVLayout LAYOUT = QKVLayout::kNHD;
+  constexpr KVLayout LAYOUT = KVLayout::kNHD;
   const uint32_t num_kv_heads = paged_kv.num_heads;
   const uint32_t head_dim = paged_kv.head_dim;
   const uint32_t batch_size = paged_kv.batch_size;

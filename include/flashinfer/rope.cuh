@@ -82,7 +82,7 @@ __device__ __forceinline__ vec_t<float, vec_size> vec_apply_llama_rope(
   return vec;
 }
 
-template <uint32_t head_dim, uint32_t vec_size, uint32_t bdx, QKVLayout layout, typename DType,
+template <uint32_t head_dim, uint32_t vec_size, uint32_t bdx, KVLayout layout, typename DType,
           typename IdType>
 __global__ void BatchQKApplyRotaryInPlaceKernel(DType* __restrict__ q, DType* __restrict__ k,
                                                 IdType* __restrict__ indptr,
@@ -141,7 +141,7 @@ cudaError_t BatchQKApplyRotaryInPlace(DType* __restrict__ q, DType* __restrict__
                                       IdType* __restrict__ indptr, IdType* __restrict__ offsets,
                                       uint32_t batch_size, uint32_t num_qo_heads,
                                       uint32_t num_kv_heads, uint32_t head_dim,
-                                      QKVLayout layout = QKVLayout::kNHD, float rope_scale = 1.f,
+                                      KVLayout layout = KVLayout::kNHD, float rope_scale = 1.f,
                                       float rope_theta = 1e4, cudaStream_t stream = nullptr) {
   float rope_rcp_scale = 1.0f / rope_scale;
   float rope_rcp_theta = 1.0f / rope_theta;

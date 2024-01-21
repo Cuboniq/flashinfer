@@ -35,8 +35,8 @@ torch::Tensor single_decode_with_kv_cache(torch::Tensor q, torch::Tensor k, torc
   unsigned int num_qo_heads = q.size(0);
   unsigned int head_dim = q.size(1);
   unsigned int kv_len, num_kv_heads;
-  QKVLayout kv_layout = static_cast<QKVLayout>(layout);
-  if (kv_layout == QKVLayout::kNHD) {
+  KVLayout kv_layout = static_cast<KVLayout>(layout);
+  if (kv_layout == KVLayout::kNHD) {
     kv_len = k.size(0);
     num_kv_heads = k.size(1);
   } else {

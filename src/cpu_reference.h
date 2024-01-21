@@ -47,7 +47,7 @@ template <typename dtype_in, typename dtype_out>
 std::vector<dtype_out> single_mha(const std::vector<dtype_in>& q, const std::vector<dtype_in>& k,
                                   const std::vector<dtype_in>& v, size_t qo_len, size_t kv_len,
                                   size_t num_q_heads, size_t num_kv_heads, size_t head_dim,
-                                  bool causal = true, QKVLayout layout = QKVLayout::kHND,
+                                  bool causal = true, KVLayout layout = KVLayout::kHND,
                                   RotaryMode rotary_mode = RotaryMode::kNone,
                                   float rope_scale = 1.f, float rope_theta = 1e4) {
   assert(qo_len <= kv_len);

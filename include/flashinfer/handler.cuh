@@ -354,7 +354,7 @@ cudaError_t BatchPrefillWithPagedKVCacheWrapper(
   return cudaSuccess;
 }
 
-template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, QKVLayout LAYOUT, RotaryMode ROTARY_MODE,
+template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, KVLayout LAYOUT, RotaryMode ROTARY_MODE,
           bool ALLOW_FP16_QK_REDUCTION, bool CAUSAL, typename DTypeIn, typename DTypeOut,
           typename IdType>
 cudaError_t BatchPrefillWithRaggedKVCacheWrapperDispatched(
@@ -397,7 +397,7 @@ cudaError_t BatchPrefillWithRaggedKVCacheWrapper(
     bool causal = true, RotaryMode rotary_mode = RotaryMode::kNone,
     bool allow_fp16_qk_reduction = false, const float rope_scale = 1.f,
     const float rope_theta = 1e4, cudaStream_t stream = nullptr) {
-  constexpr QKVLayout LAYOUT = QKVLayout::kNHD;
+  constexpr KVLayout LAYOUT = KVLayout::kNHD;
   SWITCH_GQA_GROUP_SIZE(
       num_qo_heads / num_kv_heads, GROUP_SIZE,
       {SWITCH_HEAD_DIM(

@@ -34,8 +34,8 @@ torch::Tensor single_prefill_with_kv_cache(torch::Tensor q, torch::Tensor k, tor
   CHECK_EQ(q.size(2), k.size(2));
   unsigned int head_dim = q.size(2);
   unsigned int kv_len, qo_len, num_kv_heads, num_qo_heads;
-  QKVLayout qkv_layout = static_cast<QKVLayout>(layout);
-  if (qkv_layout == QKVLayout::kNHD) {
+  KVLayout qkv_layout = static_cast<KVLayout>(layout);
+  if (qkv_layout == KVLayout::kNHD) {
     kv_len = k.size(0);
     qo_len = q.size(0);
     num_kv_heads = k.size(1);
@@ -78,8 +78,8 @@ std::vector<torch::Tensor> single_prefill_with_kv_cache_return_lse(
   CHECK_EQ(q.size(2), k.size(2));
   unsigned int head_dim = q.size(2);
   unsigned int kv_len, qo_len, num_kv_heads, num_qo_heads;
-  QKVLayout qkv_layout = static_cast<QKVLayout>(layout);
-  if (qkv_layout == QKVLayout::kNHD) {
+  KVLayout qkv_layout = static_cast<KVLayout>(layout);
+  if (qkv_layout == KVLayout::kNHD) {
     kv_len = k.size(0);
     qo_len = q.size(0);
     num_kv_heads = k.size(1);

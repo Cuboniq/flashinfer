@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Formatting CUDA files"
-find include/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format -i
-find src/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format -i
-find python/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format -i
+find include/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format-16 -i
+find src/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format-16 -i
+find python/ -regex '.*\.\(h\|cuh\|cu\|cc\)' | xargs clang-format-16 -i
 echo "Formatting Python files"
 find python/ -regex '.*\.\(py\)' | xargs black

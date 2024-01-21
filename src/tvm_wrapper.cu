@@ -52,13 +52,13 @@ template <typename DTypeIn, typename DTypeOut>
 cudaError_t _SinglePrefillWithKVCacheNoLSE(DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeOut* o,
                                            float* tmp, uint32_t num_qo_heads, uint32_t num_kv_heads,
                                            uint32_t qo_len, uint32_t kv_len, uint32_t head_dim,
-                                           bool causal = true, QKVLayout layout = QKVLayout::kNHD,
+                                           bool causal = true, KVLayout layout = KVLayout::kNHD,
                                            RotaryMode rotary_mode = RotaryMode::kNone,
                                            bool allow_fp16_qk_reduction = false,
                                            float rope_scale = 1.f, float rope_theta = 1e4,
                                            cudaStream_t stream = nullptr) {
   CHECK(head_dim == 128) << "The head dimension must be 128";
-  CHECK(layout == QKVLayout::kNHD) << "The layout must be NHD";
+  CHECK(layout == KVLayout::kNHD) << "The layout must be NHD";
   const uint32_t group_size = num_qo_heads / num_kv_heads;
 
   SWITCH_ALLOW_FP16_QK_REDUCTION(
@@ -67,10 +67,10 @@ cudaError_t _SinglePrefillWithKVCacheNoLSE(DTypeIn* q, DTypeIn* k, DTypeIn* v, D
           group_size, GROUP_SIZE,
           {SWITCH_CAUSAL(causal, CAUSAL, {SWITCH_ROTARY_MODE(rotary_mode, ROTARY_MODE, {
                            SinglePrefillWithKVCacheDispatched<
-                               GROUP_SIZE, /*head_dim=*/128, /*layout=*/QKVLayout::kNHD,
-                               ROTARY_MODE, ALLOW_FP16_QK_REDUCTION, CAUSAL>(
-                               q, k, v, o, tmp, /*lse=*/nullptr, num_kv_heads, qo_len, kv_len,
-                               rope_scale, rope_theta, stream);
+                               GROUP_SIZE, /*head_dim=*/128, /*layout=*/KVLayout::kNHD, ROTARY_MODE,
+                               ALLOW_FP16_QK_REDUCTION, CAUSAL>(q, k, v, o, tmp, /*lse=*/nullptr,
+                                                                num_kv_heads, qo_len, kv_len,
+                                                                rope_scale, rope_theta, stream);
                          })})})});
   return cudaSuccess;
 }
@@ -443,18 +443,18 @@ cudaError_t _BatchPrefillWithRaggedKVCacheWrapper(
     BatchPrefillHandler* handler, DTypeIn* q, IdType* qo_indptr, DTypeIn* k, DTypeIn* v,
     IdType* kv_indptr, DTypeOut* o, float* lse, const uint32_t batch_size,
     const uint32_t num_qo_heads, const uint32_t num_kv_heads, const uint32_t head_dim,
-    bool causal = true, QKVLayout layout = QKVLayout::kNHD,
+    bool causal = true, KVLayout layout = KVLayout::kNHD,
     RotaryMode rotary_mode = RotaryMode::kNone, bool allow_fp16_qk_reduction = false,
     const float rope_scale = 1.f, const float rope_theta = 1e4, cudaStream_t stream = nullptr) {
   CHECK(lse != nullptr) << "The lse buffer must be provided";
   CHECK(head_dim == 128) << "The head dimension must be 128";
-  CHECK(layout == QKVLayout::kNHD) << "The layout must be NHD";
+  CHECK(layout == KVLayout::kNHD) << "The layout must be NHD";
   CHECK(allow_fp16_qk_reduction == false) << "The fp16 qk reduction is not supported";
   SWITCH_GQA_GROUP_SIZE(
       num_qo_heads / num_kv_heads, GROUP_SIZE,
       {SWITCH_CAUSAL(causal, CAUSAL, {SWITCH_ROTARY_MODE(rotary_mode, ROTARY_MODE, {
                        return BatchPrefillWithRaggedKVCacheWrapperDispatched<
-                           GROUP_SIZE, /*head_dim=*/128, /*layout=*/QKVLayout::kNHD, ROTARY_MODE,
+                           GROUP_SIZE, /*head_dim=*/128, /*layout=*/KVLayout::kNHD, ROTARY_MODE,
                            /*allow_fp16_qk_reduction=*/false, CAUSAL, DTypeIn, DTypeOut, IdType>(
                            handler, q, qo_indptr, k, v, kv_indptr, o, lse, batch_size, num_kv_heads,
                            rope_scale, rope_theta, stream);
@@ -527,7 +527,7 @@ void _FlashInferAttentionPrefillWithRaggedKVCache(DLTensor* q_data, DLTensor* qo
                     static_cast<dtype_in*>(v_data->data), static_cast<dtype_idx*>(kv_indptr->data),
                     static_cast<dtype_out*>(output->data),
                     /*lse=*/static_cast<float*>(lse->data), batch_size, nhead_qo, nhead_kv, nfeat,
-                    /*causal=*/bool(causal), QKVLayout::kNHD, RotaryMode(rotary_mode),
+                    /*causal=*/bool(causal), KVLayout::kNHD, RotaryMode(rotary_mode),
                     /*allow_fp16_qk_reduction=*/false, rope_scale, rope_theta, 0);
           })})})
 }
@@ -654,7 +654,7 @@ void _FlashInferBatchQKApplyRotaryInPlace(DLTensor* q, DLTensor* k, DLTensor* in
         cudaError_t status = BatchQKApplyRotaryInPlace(
             static_cast<dtype*>(q->data), static_cast<dtype*>(k->data),
             static_cast<idtype*>(indptr->data), static_cast<idtype*>(offsets->data), batch_size,
-            num_qo_heads, num_kv_heads, head_dim, QKVLayout(qkv_layout), rope_scale, rope_theta);
+            num_qo_heads, num_kv_heads, head_dim, KVLayout(qkv_layout), rope_scale, rope_theta);
         if (status != cudaSuccess) {
           LOG(FATAL) << "FlashInfer CUDA kernel error " << cudaGetErrorString(status);
         }

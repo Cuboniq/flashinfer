@@ -127,13 +127,13 @@
 
 #define SWITCH_LAYOUT(layout, LAYOUT, ...)                  \
   switch (layout) {                                         \
-    case QKVLayout::kNHD: {                                 \
-      constexpr QKVLayout LAYOUT = QKVLayout::kNHD;         \
+    case KVLayout::kNHD: {                                  \
+      constexpr KVLayout LAYOUT = KVLayout::kNHD;           \
       __VA_ARGS__                                           \
       break;                                                \
     }                                                       \
-    case QKVLayout::kHND: {                                 \
-      constexpr QKVLayout LAYOUT = QKVLayout::kHND;         \
+    case KVLayout::kHND: {                                  \
+      constexpr KVLayout LAYOUT = KVLayout::kHND;           \
       __VA_ARGS__                                           \
       break;                                                \
     }                                                       \

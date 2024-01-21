@@ -90,7 +90,7 @@ void _TestBatchPrefillKernelOneHotCorrectness(size_t num_kv_heads, size_t num_qo
 
     std::vector<T> o_ref = cpu_reference::single_mha<T, T>(
         q, key[request_idx], value[request_idx], q_len, kv_len, num_qo_heads, num_kv_heads,
-        head_dim, causal, QKVLayout::kNHD, rotary_mode);
+        head_dim, causal, KVLayout::kNHD, rotary_mode);
 
     thrust::device_vector<int32_t> q_indptr_device(q_indptr);
     thrust::device_vector<T> q_device(q);
@@ -197,7 +197,7 @@ void _TestBatchPrefillKernelShortContextCorrectness(size_t num_kv_heads, size_t 
     int32_t q_len = q_lens[request_idx], kv_len = kv_lens[request_idx];
     std::vector<T> o_ref_i = cpu_reference::single_mha<T, T>(
         q[request_idx], key[request_idx], value[request_idx], q_len, kv_len, num_qo_heads,
-        num_kv_heads, head_dim, causal, QKVLayout::kNHD, rotary_mode);
+        num_kv_heads, head_dim, causal, KVLayout::kNHD, rotary_mode);
     o_ref.push_back(o_ref_i);
   }
 
@@ -289,7 +289,7 @@ void _TestBatchPrefillKernelLongContextCorrectness(size_t num_kv_heads, size_t n
 
   std::vector<T> o_ref =
       cpu_reference::single_mha<T, T>(q, k, v, q_lens[0], kv_lens[0], num_qo_heads, num_kv_heads,
-                                      head_dim, causal, QKVLayout::kNHD, rotary_mode);
+                                      head_dim, causal, KVLayout::kNHD, rotary_mode);
 
   thrust::device_vector<int32_t> q_indptr_device(q_indptr);
   thrust::device_vector<T> q_device(q);

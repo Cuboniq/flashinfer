@@ -195,7 +195,7 @@ __device__ __forceinline__ void sync_state(state_t<vec_size>& st, float* smem, f
  *   of "theta" used in RoPE (Rotary Positional Embeddings)
  * \param kv_chunk_size A integer indicates the kv-chunk size
  */
-template <QKVLayout layout, bool partition_kv, RotaryMode rotary_mode, uint32_t num_stages_smem,
+template <KVLayout layout, bool partition_kv, RotaryMode rotary_mode, uint32_t num_stages_smem,
           uint32_t tile_size_per_bdx, uint32_t vec_size, uint32_t bdx, uint32_t bdy, uint32_t bdz,
           typename DTypeIn, typename DTypeOut>
 __global__ void SingleDecodeWithKVCacheKernel(DTypeIn* __restrict__ q, DTypeIn* __restrict__ k,
@@ -343,7 +343,7 @@ __global__ void SingleDecodeWithKVCacheKernel(DTypeIn* __restrict__ q, DTypeIn* 
   }
 }
 
-template <QKVLayout layout, RotaryMode rotary_mode, uint32_t num_stages_smem, uint32_t vec_size,
+template <KVLayout layout, RotaryMode rotary_mode, uint32_t num_stages_smem, uint32_t vec_size,
           uint32_t bdx, uint32_t bdy, uint32_t bdz, typename DTypeIn, typename DTypeOut>
 __global__ void BatchDecodeWithPaddedKVCacheKernel(DTypeIn* __restrict__ q, DTypeIn* __restrict__ k,
                                                    DTypeIn* __restrict__ v,
@@ -729,7 +729,7 @@ template <typename DTypeIn, typename DTypeOut>
 cudaError_t SingleDecodeWithKVCacheWorkEstimation(uint32_t& tmp_size, uint32_t& max_grid_size,
                                                   uint32_t num_qo_heads, uint32_t num_kv_heads,
                                                   uint32_t seq_len, uint32_t head_dim,
-                                                  QKVLayout layout = QKVLayout::kNHD,
+                                                  KVLayout layout = KVLayout::kNHD,
                                                   RotaryMode rotary_mode = RotaryMode::kNone,
                                                   cudaStream_t stream = nullptr) {
   const uint32_t GROUP_SIZE = num_qo_heads / num_kv_heads;
@@ -804,7 +804,7 @@ cudaError_t SingleDecodeWithKVCacheWorkEstimation(uint32_t& tmp_size, uint32_t& 
 template <typename DTypeIn, typename DTypeOut>
 cudaError_t SingleDecodeWithKVCache(DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeOut* o, DTypeOut* tmp,
                                     uint32_t num_qo_heads, uint32_t num_kv_heads, uint32_t seq_len,
-                                    uint32_t head_dim, QKVLayout layout = QKVLayout::kNHD,
+                                    uint32_t head_dim, KVLayout layout = KVLayout::kNHD,
                                     RotaryMode rotary_mode = RotaryMode::kNone,
                                     float rope_scale = 1.f, float rope_theta = 1e4,
                                     cudaStream_t stream = nullptr) {
@@ -1239,7 +1239,7 @@ cudaError_t BatchDecodeWithPagedKVCache(DTypeIn* q,
   return cudaSuccess;
 }
 
-template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, QKVLayout LAYOUT, RotaryMode ROTARY_MODE,
+template <uint32_t GROUP_SIZE, uint32_t HEAD_DIM, KVLayout LAYOUT, RotaryMode ROTARY_MODE,
           typename DTypeIn, typename DTypeOut>
 cudaError_t BatchDecodeWithPaddedKVCacheDispatched(DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeIn* o,
                                                    float* tmp, float* lse, uint32_t batch_size,
@@ -1286,7 +1286,7 @@ template <typename DTypeIn, typename DTypeOut>
 cudaError_t BatchDecodeWithPaddedKVCache(
     DTypeIn* q, DTypeIn* k, DTypeIn* v, DTypeIn* o, DTypeOut* tmp, float* lse, uint32_t batch_size,
     uint32_t padded_kv_len, uint32_t num_qo_heads, uint32_t num_kv_heads, uint32_t head_dim,
-    QKVLayout layout = QKVLayout::kNHD, RotaryMode rotary_mode = RotaryMode::kNone,
+    KVLayout layout = KVLayout::kNHD, RotaryMode rotary_mode = RotaryMode::kNone,
     float rope_scale = 1.f, float rope_theta = 1e4, cudaStream_t stream = nullptr) {
   if (num_qo_heads % num_kv_heads != 0) {
     std::ostringstream err_msg;

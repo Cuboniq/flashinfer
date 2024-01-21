@@ -23,35 +23,35 @@ namespace flashinfer {
 /*!
  * \brief The Layout of QKV matrices
  */
-enum class QKVLayout {
+enum class KVLayout {
   // [seq_len, num_heads, head_dim]
   kNHD = 0U,
   // [num_heads, seq_len, head_dim]
   kHND = 1U,
 };
 
-template <QKVLayout layout, size_t head_dim>
+template <KVLayout layout, size_t head_dim>
 __host__ __device__ __forceinline__ size_t get_elem_offset_impl(size_t elem_idx, size_t head_idx,
                                                                 size_t feat_idx, size_t seq_len,
                                                                 size_t num_heads) {
-  if constexpr (layout == QKVLayout::kHND) {
+  if constexpr (layout == KVLayout::kHND) {
     return (head_idx * seq_len + elem_idx) * head_dim + feat_idx;
   } else {
     return (elem_idx * num_heads + head_idx) * head_dim + feat_idx;
   }
 }
 
-template <QKVLayout layout, uint32_t head_dim>
+template <KVLayout layout, uint32_t head_dim>
 __host__ __device__ __forceinline__ uint32_t get_n_stride_impl(uint32_t num_heads) {
-  return layout == QKVLayout::kHND ? head_dim : num_heads * head_dim;
+  return layout == KVLayout::kHND ? head_dim : num_heads * head_dim;
 }
 
-template <QKVLayout layout, uint32_t head_dim>
+template <KVLayout layout, uint32_t head_dim>
 __host__ __device__ __forceinline__ uint32_t get_h_stride_impl(uint32_t seq_len) {
-  return layout == QKVLayout::kNHD ? head_dim : seq_len * head_dim;
+  return layout == KVLayout::kNHD ? head_dim : seq_len * head_dim;
 }
 
-template <QKVLayout layout, uint32_t group_size, uint32_t head_dim>
+template <KVLayout layout, uint32_t group_size, uint32_t head_dim>
 struct tensor_info_t {
   uint32_t qo_len;
   uint32_t kv_len;
@@ -98,14 +98,14 @@ struct tensor_info_t {
 };
 
 /*!
- * \brief Convert QKVLayout to string
- * \param qkv_layout The QKVLayout to convert
+ * \brief Convert KVLayout to string
+ * \param qkv_layout The KVLayout to convert
  */
-inline std::string QKVLayoutToString(const QKVLayout& qkv_layout) {
+inline std::string QKVLayoutToString(const KVLayout& qkv_layout) {
   switch (qkv_layout) {
-    case QKVLayout::kNHD:
+    case KVLayout::kNHD:
       return "NHD";
-    case QKVLayout::kHND:
+    case KVLayout::kHND:
       return "HND";
     default:
       return "Unknown";

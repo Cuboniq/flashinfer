@@ -25,7 +25,7 @@ using namespace flashinfer;
 
 template <typename T>
 void _TestDecodingKernelCorrectness(size_t num_qo_heads, size_t num_kv_heads, size_t seq_len,
-                                    size_t head_dim, QKVLayout layout, RotaryMode rotary_mode) {
+                                    size_t head_dim, KVLayout layout, RotaryMode rotary_mode) {
   std::vector<T> Q_host(num_qo_heads * head_dim);
   std::vector<T> K_host(seq_len * num_kv_heads * head_dim);
   std::vector<T> V_host(seq_len * num_kv_heads * head_dim);
@@ -87,7 +87,7 @@ void TestSingleDecodeKernelCorrectness() {
           for (unsigned int layout : {0U, 1U}) {
             for (unsigned int rotary_mode : {0U, 1U}) {
               _TestDecodingKernelCorrectness<T>(num_qo_heads, num_kv_heads, seq_len, head_dim,
-                                                QKVLayout(layout), RotaryMode(rotary_mode));
+                                                KVLayout(layout), RotaryMode(rotary_mode));
             }
           }
         }

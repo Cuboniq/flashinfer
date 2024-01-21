@@ -25,7 +25,7 @@ using namespace flashinfer;
 template <typename DTypeIn, typename DTypeOut>
 void _TestSinglePrefillKernelCorrectness(size_t qo_len, size_t kv_len, size_t num_qo_heads,
                                          size_t num_kv_heads, size_t head_dim, bool causal,
-                                         QKVLayout layout, RotaryMode rotary_mode,
+                                         KVLayout layout, RotaryMode rotary_mode,
                                          bool allow_fp16_qk_reduction, float rtol = 1e-3,
                                          float atol = 1e-3) {
   std::vector<DTypeIn> q(qo_len * num_qo_heads * head_dim);
@@ -87,7 +87,7 @@ void TestSinglePrefillKernelLongContextCorrectness(bool allow_fp16_qk_reduction)
             for (size_t rotary_mode : {0, 1}) {
               for (size_t layout : {0, 1}) {
                 _TestSinglePrefillKernelCorrectness<DTypeIn, DTypeOut>(
-                    qo_len, kv_len, num_heads, num_heads, head_dim, causal, QKVLayout(layout),
+                    qo_len, kv_len, num_heads, num_heads, head_dim, causal, KVLayout(layout),
                     RotaryMode(rotary_mode), allow_fp16_qk_reduction);
               }
             }
@@ -111,8 +111,7 @@ void TestSinglePrefillKernelShortContextCorrectness(bool allow_fp16_qk_reduction
               for (size_t layout : {0, 1}) {
                 _TestSinglePrefillKernelCorrectness<DTypeIn, DTypeOut>(
                     qkv_len, qkv_len, num_qo_heads, num_kv_heads, head_dim, causal,
-                    QKVLayout(layout), RotaryMode(rotary_mode), allow_fp16_qk_reduction, rtol,
-                    atol);
+                    KVLayout(layout), RotaryMode(rotary_mode), allow_fp16_qk_reduction, rtol, atol);
               }
             }
           }
@@ -132,7 +131,7 @@ void TestSinglePrefillKernelCorrectness(bool allow_fp16_qk_reduction) {
             for (size_t rotary_mode : {0, 1}) {
               for (size_t layout : {0, 1}) {
                 _TestSinglePrefillKernelCorrectness<DTypeIn, DTypeOut>(
-                    qo_len, kv_len, num_heads, num_heads, head_dim, causal, QKVLayout(layout),
+                    qo_len, kv_len, num_heads, num_heads, head_dim, causal, KVLayout(layout),
                     RotaryMode(rotary_mode), allow_fp16_qk_reduction);
               }
             }

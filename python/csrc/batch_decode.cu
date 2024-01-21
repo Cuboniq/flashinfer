@@ -37,8 +37,8 @@ torch::Tensor batch_decode_with_padded_kv_cache(torch::Tensor q, torch::Tensor k
   unsigned int num_qo_heads = q.size(1);
   unsigned int head_dim = q.size(2);
   unsigned int padded_kv_len, num_kv_heads;
-  QKVLayout kv_layout = static_cast<QKVLayout>(layout);
-  if (kv_layout == QKVLayout::kNHD) {
+  KVLayout kv_layout = static_cast<KVLayout>(layout);
+  if (kv_layout == KVLayout::kNHD) {
     padded_kv_len = k_padded.size(1);
     num_kv_heads = k_padded.size(2);
   } else {
@@ -79,8 +79,8 @@ std::vector<torch::Tensor> batch_decode_with_padded_kv_cache_return_lse(
   unsigned int num_qo_heads = q.size(1);
   unsigned int head_dim = q.size(2);
   unsigned int padded_kv_len, num_kv_heads;
-  QKVLayout kv_layout = static_cast<QKVLayout>(layout);
-  if (kv_layout == QKVLayout::kNHD) {
+  KVLayout kv_layout = static_cast<KVLayout>(layout);
+  if (kv_layout == KVLayout::kNHD) {
     padded_kv_len = k_padded.size(1);
     num_kv_heads = k_padded.size(2);
   } else {
